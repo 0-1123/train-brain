@@ -1,0 +1,19 @@
+<h2>Enter the missing operator</h2>
+<form action="score" method="post">
+  <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+  <input type="hidden" name="equation" value="<%= @equation.id %>">
+  <% equation_nubmers = @equation.solution.scan(/(\d+)/i).flatten %>
+  <div class="row pl-3 my-3">
+    <h3 class="mr-2"><%= equation_nubmers[0] %></h3>
+    <div class="mr-2">
+      <select class="form-control" name="sign">
+        <option>+</option>
+        <option>-</option>
+        <option>*</option>
+        <option>:</option>
+      </select>
+    </div>
+    <h3><%= equation_nubmers[1] %> = <%= equation_nubmers[2] %></h3>
+  </div>
+  <input type="submit" value="Submit" class="btn btn-danger">
+</form>

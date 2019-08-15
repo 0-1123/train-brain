@@ -1,0 +1,11 @@
+<% if @equation.score == 0 %>
+  <h1>0 Points</h1>
+  <h2>False!</h2>
+<% else %>
+  <h1>+ <%= @equation.score %> Points</h1>
+  <h2>Correct!</h2>
+<% end %>
+<h4>You answerded: <strong><%= @sign %></strong></h4>
+<h5>Solution:</h5>
+<p><%= @equation.solution %></p>
+<%= link_to  "Back", equation_new_path, class: "btn btn-light"  %>
