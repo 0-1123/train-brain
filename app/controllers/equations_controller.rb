@@ -7,6 +7,7 @@ class EquationsController < ApplicationController
 
   def new
     @equation = Equation.new(solution: generate_equation)
+    @test = whole_equation
     @equation.save!
   end
 
@@ -18,6 +19,110 @@ class EquationsController < ApplicationController
   end
 
   private
+
+  def whole_equation
+    operators = {1 => :+, 2 => :-, 3 => :*, 4 => :/}
+    randop = [3, 4, 4, 3]
+    i = 0
+    num = [0, 0, 0, 0, 0]
+    while i <= 4
+      if randop[i] == 4
+        division_array = division
+        num[i + 1] = division_array[1]
+        if num[i] == 0
+          num[i] = division_array[0]
+          solution = num[i]
+        elsif randop[i - 1] == 4 && randop[i - 2] == 4 && randop[i - 3] == 4 && i - 3 >= 0
+          num[i - 3] = num[i - 3] * division_array[0]
+        elsif randop[i - 1] == 4 && randop[i - 2] == 4 && i - 2 >= 0
+          num[i - 2] = num[i - 2] * division_array[0]
+        elsif randop[i - 1] == 4 && i - 1 >= 0
+          num[i - 1] = num[i - 1] * division_array[0]
+        end
+      elsif randop[i] == 3
+        num[i] = rand(1..10) if randop[i - 1] != 4
+        num[i + 1] = rand(1..10) if randop[i + 1] != 4
+      else
+        num[i] = rand(1..100) if num[i] == 0
+        num[i + 1] = rand(1..100) if num[i + 1] == 0
+      end
+      i += 1
+    end
+
+    # Background maths
+    used = [nil, nil, nil, nil]
+    d = 0
+    while d <= 4
+      if randop[d] == 4
+        if used[d - 1].nil? || d == 0
+          used[d] = num[d] / num[d + 1]
+        else
+          used[d] = used[d - 1] / num[d + 1]
+          used[d - 1] = used[d]
+        end
+      end
+      d += 1
+    end
+    m = 0
+    while m <= 4
+      if randop[m] == 3
+        if (used[m - 1].nil? || m == 0) && used[m + 1].nil?
+          used[m] = num[m] * num[m + 1]
+        elsif used[m - 1] != nil && used[m + 1].nil? && m != 0
+          used[m] = used[m - 1] * num[m + 1]
+          used[m - 1] = used[m]
+        elsif (used[m - 1].nil? || m == 0) && used[m + 1] != nil
+          used[m] = used[m + 1] * num[m]
+          used[m + 1] = used[m]
+        else
+          used[m] = used[m + 1] * used[m - 1]
+          used[m + 1] = used[m]
+          used[m - 1] = used[m]
+        end
+      end
+      m += 1
+    end
+    a = 0
+    while a <= 4
+      if randop[a] == 1
+        if used[a - 1].nil? && used[a + 1].nil?
+          used[a] = num[a] + num[a + 1]
+        elsif used[a - 1] != nil && used[a + 1].nil?
+          used[a] = used[a - 1] + num[a + 1]
+          used[a - 1] = used[a]
+        elsif used[a - 1].nil? && used[a + 1] != nil
+          used[a] = used[a + 1] + num[a]
+          used[a + 1] = used[a]
+        else
+          used[a] = used[a + 1] + used[a - 1]
+          used[a + 1] = used[a]
+          used[a - 1] = used[a]
+        end
+      end
+      a += 1
+    end
+    s = 0
+    while s <= 4
+      if randop[s] == 2
+        if used[s - 1].nil? && used[s + 1].nil?
+          used[s] = num[s] - num[s + 1]
+        elsif used[s - 1] != nil && used[s + 1].nil?
+          used[s] = used[s - 1] - num[s + 1]
+          used[s - 1] = used[s]
+        elsif used[s - 1].nil? && used[s + 1] != nil
+          used[s] = used[s + 1] - num[s]
+          used[s + 1] = used[s]
+        else
+          used[s] = used[s + 1] - used[s - 1]
+          used[s + 1] = used[s]
+          used[s - 1] = used[s]
+        end
+      end
+      s += 1
+    end
+
+    return "#{num[0]} #{operators[randop[0]]} #{num[1]} #{operators[randop[1]]} #{num[2]} #{operators[randop[2]]} #{num[3]} #{operators[randop[3]]} #{num[4]} #{randop[4]} #{num[5]} = #{used.join(", ")}"
+  end
 
   def generate_equation
     time = Time.now
@@ -36,7 +141,7 @@ class EquationsController < ApplicationController
     div_solution = rand(2..10)
     dividing = rand(1..10)
     divided = div_solution * dividing
-    return "#{divided} : #{dividing} = #{div_solution}"
+    return [divided, dividing]
   end
 
   def multiplication
@@ -64,7 +169,7 @@ class EquationsController < ApplicationController
     if sign == equation.solution[/[^\w\s]/]
       correct_points = 100
       deduction_time = Time.now - equation.created_at
-      return correct_points - deduction_time.to_i
+      return correct_points - deduction_time
     else
       return 0
     end
