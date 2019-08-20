@@ -22,25 +22,24 @@ class EquationsController < ApplicationController
 
   def whole_equation
     operators = {1 => :+, 2 => :-, 3 => :*, 4 => :/}
-    randop = [3, 4, 4, 3]
+    randop = [1,2,4,2]
     i = 0
     num = [0, 0, 0, 0, 0]
     while i <= 4
       if randop[i] == 4
         division_array = division
         num[i + 1] = division_array[1]
-        if num[i] == 0
-          num[i] = division_array[0]
-          solution = num[i]
-        elsif randop[i - 1] == 4 && randop[i - 2] == 4 && randop[i - 3] == 4 && i - 3 >= 0
+        if randop[i - 1] == 4 && randop[i - 2] == 4 && randop[i - 3] == 4 && i - 3 >= 0
           num[i - 3] = num[i - 3] * division_array[0]
         elsif randop[i - 1] == 4 && randop[i - 2] == 4 && i - 2 >= 0
           num[i - 2] = num[i - 2] * division_array[0]
         elsif randop[i - 1] == 4 && i - 1 >= 0
           num[i - 1] = num[i - 1] * division_array[0]
+        else
+          num[i] = division_array[0]
         end
       elsif randop[i] == 3
-        num[i] = rand(1..10) if randop[i - 1] != 4
+        num[i] = rand(1..10) if (randop[i - 1] != 4 && i - 1 >= 0) || num[i] == 0
         num[i + 1] = rand(1..10) if randop[i + 1] != 4
       else
         num[i] = rand(1..100) if num[i] == 0
@@ -60,28 +59,17 @@ class EquationsController < ApplicationController
           used[d] = used[d - 1] / num[d + 1]
           used[d - 1] = used[d]
         end
+      elsif randop[d] == 3
+        if used[d - 1].nil? || d == 0
+          used[d] = num[d] * num[d + 1]
+        else
+          used[d] = used[d - 1] * num[d + 1]
+          used[d - 1] = used[d]
+        end
       end
       d += 1
     end
-    m = 0
-    while m <= 4
-      if randop[m] == 3
-        if (used[m - 1].nil? || m == 0) && used[m + 1].nil?
-          used[m] = num[m] * num[m + 1]
-        elsif used[m - 1] != nil && used[m + 1].nil? && m != 0
-          used[m] = used[m - 1] * num[m + 1]
-          used[m - 1] = used[m]
-        elsif (used[m - 1].nil? || m == 0) && used[m + 1] != nil
-          used[m] = used[m + 1] * num[m]
-          used[m + 1] = used[m]
-        else
-          used[m] = used[m + 1] * used[m - 1]
-          used[m + 1] = used[m]
-          used[m - 1] = used[m]
-        end
-      end
-      m += 1
-    end
+
     a = 0
     while a <= 4
       if randop[a] == 1
@@ -98,27 +86,22 @@ class EquationsController < ApplicationController
           used[a + 1] = used[a]
           used[a - 1] = used[a]
         end
-      end
-      a += 1
-    end
-    s = 0
-    while s <= 4
-      if randop[s] == 2
-        if used[s - 1].nil? && used[s + 1].nil?
-          used[s] = num[s] - num[s + 1]
-        elsif used[s - 1] != nil && used[s + 1].nil?
-          used[s] = used[s - 1] - num[s + 1]
-          used[s - 1] = used[s]
-        elsif used[s - 1].nil? && used[s + 1] != nil
-          used[s] = used[s + 1] - num[s]
-          used[s + 1] = used[s]
+      elsif randop[a] == 2
+        if used[a - 1].nil? && used[a + 1].nil?
+          used[a] = num[a] - num[a + 1]
+        elsif used[a - 1] != nil && used[a + 1].nil?
+          used[a] = used[a - 1] - num[a + 1]
+          used[a - 1] = used[a]
+        elsif used[a - 1].nil? && used[a + 1] != nil
+          used[a] = num[a] - used[a + 1]
+          used[a + 1] = used[a]
         else
-          used[s] = used[s + 1] - used[s - 1]
-          used[s + 1] = used[s]
-          used[s - 1] = used[s]
+          used[a] = used[a - 1] - used[a + 1]
+          used[a + 1] = used[a]
+          used[a - 1] = used[a]
         end
       end
-      s += 1
+      a += 1
     end
 
     return "#{num[0]} #{operators[randop[0]]} #{num[1]} #{operators[randop[1]]} #{num[2]} #{operators[randop[2]]} #{num[3]} #{operators[randop[3]]} #{num[4]} #{randop[4]} #{num[5]} = #{used.join(", ")}"
