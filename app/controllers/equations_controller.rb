@@ -22,7 +22,7 @@ class EquationsController < ApplicationController
 
   def whole_equation
     operators = {1 => :+, 2 => :-, 3 => :*, 4 => :/}
-    randop = [1,2,4,2]
+    randop = [2,4,4,4]
     i = 0
     num = [0, 0, 0, 0, 0]
     while i <= 4
@@ -73,12 +73,12 @@ class EquationsController < ApplicationController
     a = 0
     while a <= 4
       if randop[a] == 1
-        if used[a - 1].nil? && used[a + 1].nil?
+        if (used[a - 1].nil? || a == 0) && used[a + 1].nil?
           used[a] = num[a] + num[a + 1]
         elsif used[a - 1] != nil && used[a + 1].nil?
           used[a] = used[a - 1] + num[a + 1]
           used[a - 1] = used[a]
-        elsif used[a - 1].nil? && used[a + 1] != nil
+        elsif (used[a - 1].nil? || a == 0) && used[a + 1] != nil
           used[a] = used[a + 1] + num[a]
           used[a + 1] = used[a]
         else
@@ -87,12 +87,12 @@ class EquationsController < ApplicationController
           used[a - 1] = used[a]
         end
       elsif randop[a] == 2
-        if used[a - 1].nil? && used[a + 1].nil?
+        if (used[a - 1].nil? || a == 0) && used[a + 1].nil?
           used[a] = num[a] - num[a + 1]
         elsif used[a - 1] != nil && used[a + 1].nil?
           used[a] = used[a - 1] - num[a + 1]
           used[a - 1] = used[a]
-        elsif used[a - 1].nil? && used[a + 1] != nil
+        elsif (used[a - 1].nil? || a == 0) && used[a + 1] != nil
           used[a] = num[a] - used[a + 1]
           used[a + 1] = used[a]
         else
@@ -102,6 +102,10 @@ class EquationsController < ApplicationController
         end
       end
       a += 1
+    end
+    if randop[1] == 4 && randop[2] == 4
+      used[0] = num[0] + used[3] if randop[0] == 1
+      used[0] = num [0] - used[3] if randop[0] == 2
     end
 
     return "#{num[0]} #{operators[randop[0]]} #{num[1]} #{operators[randop[1]]} #{num[2]} #{operators[randop[2]]} #{num[3]} #{operators[randop[3]]} #{num[4]} #{randop[4]} #{num[5]} = #{used.join(", ")}"
