@@ -5,7 +5,9 @@
   <h1>+ <%= @equation.score %> Points</h1>
   <h2>Correct!</h2>
 <% end %>
-<h4>You answerded: <strong><%= @sign %></strong></h4>
+<% num = @equation.solution.scan(/(\d+)/).flatten %>
+<h5>Your answer: </h5>
+<h5><%= num[0] %> <%= @signs[:op0] %> <%= num[1] %> <%= @signs[:op1] %> <%= num[2] %> <%= @signs[:op2] %> <%= num[3] %> <%= @signs[:op3] %> <%= num[4] %> <%= @equation.solution[/=.+/] %></h5>
 <h5>Solution:</h5>
-<p><%= @equation.solution %></p>
+<h5><%= @equation.solution %></h5>
 <%= link_to  "Back", equation_new_path, class: "btn btn-light"  %>

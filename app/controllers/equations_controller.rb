@@ -6,23 +6,23 @@ class EquationsController < ApplicationController
   end
 
   def new
-    @equation = Equation.new(solution: generate_equation)
     @test = whole_equation
+    @equation = Equation.new(solution: @test)
     @equation.save!
   end
 
   def score
-    @sign = params[:sign]
+    @signs = params
     @equation = Equation.find(params[:equation])
-    @equation.score = score_calculator(@sign, @equation)
+    @equation.score = score_calculator(@signs, @equation)
     @equation.save!
   end
 
   private
 
   def whole_equation
-    operators = {1 => :+, 2 => :-, 3 => :*, 4 => :/}
-    randop = [2,4,4,4]
+    operators = {1 => :+, 2 => :-, 3 => :*, 4 => ":"}
+    randop = [1,2,3,4].shuffle
     i = 0
     num = [0, 0, 0, 0, 0]
     while i <= 4
@@ -55,16 +55,20 @@ class EquationsController < ApplicationController
       if randop[d] == 4
         if used[d - 1].nil? || d == 0
           used[d] = num[d] / num[d + 1]
+          solution = used[d]
         else
           used[d] = used[d - 1] / num[d + 1]
           used[d - 1] = used[d]
+          solution = used[d]
         end
       elsif randop[d] == 3
         if used[d - 1].nil? || d == 0
           used[d] = num[d] * num[d + 1]
+          solution = used[d]
         else
           used[d] = used[d - 1] * num[d + 1]
           used[d - 1] = used[d]
+          solution = used[d]
         end
       end
       d += 1
@@ -75,43 +79,57 @@ class EquationsController < ApplicationController
       if randop[a] == 1
         if (used[a - 1].nil? || a == 0) && used[a + 1].nil?
           used[a] = num[a] + num[a + 1]
+          solution = used[a]
         elsif used[a - 1] != nil && used[a + 1].nil?
           used[a] = used[a - 1] + num[a + 1]
           used[a - 1] = used[a]
+          solution = used[a]
         elsif (used[a - 1].nil? || a == 0) && used[a + 1] != nil
           used[a] = used[a + 1] + num[a]
           used[a + 1] = used[a]
+          solution = used[a]
         else
           used[a] = used[a + 1] + used[a - 1]
           used[a + 1] = used[a]
           used[a - 1] = used[a]
+          solution = used[a]
         end
       elsif randop[a] == 2
         if (used[a - 1].nil? || a == 0) && used[a + 1].nil?
           used[a] = num[a] - num[a + 1]
+          solution = used[a]
         elsif used[a - 1] != nil && used[a + 1].nil?
           used[a] = used[a - 1] - num[a + 1]
           used[a - 1] = used[a]
+          solution = used[a]
         elsif (used[a - 1].nil? || a == 0) && used[a + 1] != nil
           used[a] = num[a] - used[a + 1]
           used[a + 1] = used[a]
+          solution = used[a]
         else
           used[a] = used[a - 1] - used[a + 1]
           used[a + 1] = used[a]
           used[a - 1] = used[a]
+          solution = used[a]
         end
       end
       a += 1
     end
-    if randop[1] == 4 && randop[2] == 4
-      used[0] = num[0] + used[3] if randop[0] == 1
-      used[0] = num [0] - used[3] if randop[0] == 2
+    if (randop[1] == 4 || randop[1] == 3) && (randop[2] == 4 || randop[2] == 3)
+      solution = num[0] + used[3] if randop[0] == 1
+      if randop[0] == 2 && randop[3] == 2
+        solution = used[1] - num[4]
+      elsif randop[0] == 2 && randop[3] == 1
+        solution = used[1] + num[4]
+      elsif randop[0] == 2
+        solution = num [0] - used[3]
+      end
     end
 
-    return "#{num[0]} #{operators[randop[0]]} #{num[1]} #{operators[randop[1]]} #{num[2]} #{operators[randop[2]]} #{num[3]} #{operators[randop[3]]} #{num[4]} #{randop[4]} #{num[5]} = #{used.join(", ")}"
+    return "#{num[0]} #{operators[randop[0]]} #{num[1]} #{operators[randop[1]]} #{num[2]} #{operators[randop[2]]} #{num[3]} #{operators[randop[3]]} #{num[4]} #{randop[4]} #{num[5]} =  #{solution}"
   end
 
-  def generate_equation
+  def short_equation
     time = Time.now
     if time.sec <= 15
       return division
@@ -152,9 +170,10 @@ class EquationsController < ApplicationController
     return "#{adding1} + #{adding2} = #{add_solution}"
   end
 
-  def score_calculator(sign, equation)
-    if sign == equation.solution[/[^\w\s]/]
-      correct_points = 100
+  def score_calculator(signs, equation)
+    op_arr = equation.solution.scan(/([^\w\s])/).flatten
+    if op_arr[0] == signs[:op0] && op_arr[1] == signs[:op1] && op_arr[2] == signs[:op2] && op_arr[3] == signs[:op3]
+      correct_points = 1000
       deduction_time = Time.now - equation.created_at
       return correct_points - deduction_time
     else

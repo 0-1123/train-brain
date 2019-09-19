@@ -1,0 +1,53 @@
+<div class="navbar navbar-expand navbar-light navbar-lewagon">
+  <%= link_to root_path, class: "navbar-brand" do %>
+    <i class="large material-icons" style="font-size: 40px; color: rgb(160,30,100);">train</i>
+  <% end %>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item m-2">
+        <%= link_to "Hall of Fame", "#", class: "nav-link" %>
+      </li>
+      <% if user_signed_in? %>
+        <li class="nav-item dropdown">
+          <%= image_tag "https://images.unsplash.com/photo-1537815749002-de6a533c64db?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=545&q=80", onclick: "myFunction()", class: "dropbtn avatar" %>
+          <div id="dropdown-content" id="myDropdown">
+            <%= link_to "Settings", "#", class: "dropdown-item" %>
+            <%= link_to "Log out", destroy_user_session_path, :method => :delete, class: "dropdown-item" %>
+          </div>
+        </li>
+      <% else %>
+        <li class="nav-item">
+          <%= link_to "Login", new_user_session_path, class: "nav-link m-2" %>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+</div>
+
+
+<script>
+  function myFunction() {
+    var x = document.getElementById("dropdown-content");
+    if (x.style.display === "none") {
+      x.style.display = "block";
+    } else {
+      x.style.display = "none";
+    }
+  }
+
+  // Close the dropdown menu if the user clicks outside of it
+  window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn')) {
+      var dropdowns = document.getElementById("dropdown-content");
+      if (dropdowns.style.display === "block") {
+        dropdowns.style.display = "none";
+      }
+    }
+  }
+</script>

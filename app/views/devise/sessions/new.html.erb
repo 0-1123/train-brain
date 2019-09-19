@@ -1,0 +1,31 @@
+<img src="https://images.unsplash.com/photo-1482678264299-6eb83b49cb42?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1352&q=80" alt="" class="login_background">
+<div class="login_container">
+  <h2 class="mb-3">Welcome back!</h2>
+  <div class="row">
+    <div class="col-sm-8 col-sm-offset-8">
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <div class="field mb-4">
+          <%= f.label :email %><br />
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control" %>
+        </div>
+
+        <div class="field mb-3">
+          <%= f.label :password %><br />
+          <%= f.password_field :password, autocomplete: "current-password", class: "form-control" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="field">
+            <%= f.check_box :remember_me %>
+            <%= f.label :remember_me %>
+          </div>
+        <% end %>
+
+        <div class="actions mb-3">
+          <%= f.submit "Log in", class: "btn btn-danger"%>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  <%= render "devise/shared/links" %>
+</div>
